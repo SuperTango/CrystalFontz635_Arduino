@@ -22,51 +22,79 @@ void CrystalFontz635::init ( Stream *stream2 ) {
 }
 
 void CrystalFontz635::clearWriteBuffer() {
-    memset ( buffer, 0, CFA635_WRITEBUFFER_SIZE );
+    memset ( writeBuffer, 0, CFA635_WRITEBUFFER_SIZE );
+}
+
+void CrystalFontz635::clearReadBuffer() {
+    memset ( readBuffer, 0, CFA635_READBUFFER_SIZE );
+    memset ( expectedBuffer, 0, CFA635_READBUFFER_SIZE );
 }
 
 //void CrystalFontz635::readData() {
     
 void CrystalFontz635::getHardwareFirmwareVersion() {
     clearWriteBuffer();
-    buffer[0] = 0x01;
-    buffer[1] = 0;
+    writeBuffer[0] = 0x01;
+    writeBuffer[1] = 0;
     sendPacket();
 }
 
 
 void CrystalFontz635::clearLCD() {
     clearWriteBuffer();
-    buffer[0] = 0x06;
-    buffer[1] = 0;
+    writeBuffer[0] = 0x06;
+    writeBuffer[1] = 0;
     sendPacket();
 }
 
 void CrystalFontz635::setCursorPosition ( int row, int column ) {
     clearWriteBuffer();
-    buffer[0] = 0x0B;
-    buffer[1] = 2;
-    buffer[2] = column;
-    buffer[3] = row;
+    writeBuffer[0] = 0x0B;
+    writeBuffer[1] = 2;
+    writeBuffer[2] = column;
+    writeBuffer[3] = row;
     sendPacket();
 }
 
 void CrystalFontz635::writeString ( uint8_t row, uint8_t column, char *string ) {
     clearWriteBuffer();
-    buffer[0] = 0x1F;
+    clearReadBuffer();
+    writeBuffer[0] = 0x1F;
     if ( string == NULL ) {
-        buffer[1] = 0;
+        writeBuffer[1] = 0;
     } else {
-        buffer[1] = strlen ( string ) + 2;
-        memcpy ( &buffer[4], string, strlen ( string ) );
+        writeBuffer[1] = strlen ( string ) + 2;
+        memcpy ( &writeBuffer[4], string, strlen ( string ) );
     }
-    buffer[2] = column;
-    buffer[3] = row;
+    writeBuffer[2] = column;
+    writeBuffer[3] = row;
+    expectedBuffer[0] = 0x40 | 0x1F;
+    expectedBuffer[1] = 0;
+    updateBufferCRC ( expectedBuffer );
     sendPacket();
+    receivePacket(expectedBuffer);
+}
+
+void CrystalFontz635::receivePacket ( uint8_t expectedBuffer[] ) {
+    unsigned long tStart = millis();
+    bool done = 0;
+    int count = 0;
+    int data = false;
+    while ( ( ! done ) && ( millis() - tStart <= 500 ) ) {
+        if (stream->available() > 0) {
+            readBuffer[count] = stream->read() & 0xFF;
+        }
+        count++;
+        if ( count >= ( expectedBuffer[1] + 4 ) ) {
+            done = true;
+        }
+    }
+    dumpPacket ( "packet that was expected: ", expectedBuffer );
+    dumpPacket ( "packet that was received: ", readBuffer );
 }
 
 #ifdef CFA635_DEBUG
-void CrystalFontz635::dumpPacket2 ( char *str ) {
+void CrystalFontz635::_dumpPacket ( char *str, uint8_t buffer[] ) {
     Serial.print ( "Dumping Packet: " );
     Serial.println ( str );
     Serial.print ( "  Command: " );
@@ -92,14 +120,17 @@ void CrystalFontz635::dumpPacket2 ( char *str ) {
 }
 #endif
 
+void CrystalFontz635::updateBufferCRC ( uint8_t buffer[] ) {
+    uint16_t crc = get_crc ( buffer[1] + 2, buffer );
+    buffer[buffer[1] + 2] = crc & 0XFF;
+    buffer[buffer[1] + 3] = ( crc >> 8 ) & 0XFF;
+}
 
 void CrystalFontz635::sendPacket() {
     uint16_t crc;
-    crc = get_crc ( buffer[1] + 2, buffer );
-    buffer[buffer[1] + 2] = crc & 0XFF;
-    buffer[buffer[1] + 3] = ( crc >> 8 ) & 0XFF;
-    stream->write ( buffer, buffer[1] + 4 );
-    dumpPacket ( "packet that was sent" );
+    updateBufferCRC ( writeBuffer );
+    stream->write ( writeBuffer, writeBuffer[1] + 4 );
+    dumpPacket ( "packet that was sent", writeBuffer );
 }
 
 /*

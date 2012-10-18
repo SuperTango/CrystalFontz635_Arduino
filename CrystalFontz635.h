@@ -14,13 +14,14 @@
 #define CFA635_DEBUG
 
 #ifdef CFA635_DEBUG
-#define dumpPacket(x) dumpPacket2(x)
+#define dumpPacket(x,y) _dumpPacket(x,y)
 #else
-#define dumpPacket(x)
+#define dumpPacket(x,y)
 #endif
 
 // TODO: Is this the proper size?
 #define CFA635_WRITEBUFFER_SIZE 32
+#define CFA635_READBUFFER_SIZE 24
 
 /*
  * This what the packet structure would look like, but we're not using
@@ -39,6 +40,7 @@ class CrystalFontz635 {
 
     CrystalFontz635();
     uint16_t get_crc ( uint8_t count, uint8_t *ptr );
+    void updateBufferCRC ( uint8_t buffer[] );
     void init ( Stream *stream );
     void clearLCD();
     void getHardwareFirmwareVersion();
@@ -47,11 +49,15 @@ class CrystalFontz635 {
 
   private:
     void clearWriteBuffer();
+    void clearReadBuffer();
     void sendPacket();
+    void receivePacket ( uint8_t expectedBuffer[] );
     #ifdef CFA635_DEBUG
-        void dumpPacket2 ( char *str );
+    void _dumpPacket ( char *str, uint8_t buffer[] );
     #endif
-    uint8_t buffer[CFA635_WRITEBUFFER_SIZE];
+    uint8_t writeBuffer[CFA635_WRITEBUFFER_SIZE];
+    uint8_t readBuffer[CFA635_READBUFFER_SIZE];
+    uint8_t expectedBuffer[CFA635_READBUFFER_SIZE];
     Stream *stream;
 	
 };
