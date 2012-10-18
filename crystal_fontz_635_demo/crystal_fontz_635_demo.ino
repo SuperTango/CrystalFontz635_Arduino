@@ -14,6 +14,7 @@ void setup() {
     Serial1.begin(115200);
     lcdSerial.begin(115200);
     crystalFontz635.init ( &Serial1 );
+    crystalFontz635.clearLCD();
     /*
     buffer[0] = 0x1F;
     buffer[1] = 0x07;
@@ -75,15 +76,22 @@ void loop() {
     }
     */
 
+    char str[20];
     //Serial1.write ( 0xA0 );
     //Serial.println ( 'A' );
     //delay ( 1000 );
     //Serial.println ( "Waiting for data" );
     unsigned long now = millis();
-    if ( now - lastTime > 1000 ) {
+    char buf[8];
+    if ( ( now - lastTime ) > 1000 ) {
+        unsigned long t1 = millis();
+        //String ( "Millis: " + String(millis()) ).toCharArray(str, 20);
         //crystalFontz635.getHardwareFirmwareVersion();
         //crystalFontz635.clearLCD();
-        crystalFontz635.writeString (0, 0, "hello");
+        //crystalFontz635.clearLCD();
+        crystalFontz635.writeString (0, 0, "Millis:" );
+        crystalFontz635.writeString (0, 8, ultoa ( millis(), buf, 10 ) );
+        Serial.println ( millis() - t1 );
         lastTime = now;
     }
     if (Serial1.available() > 0) {

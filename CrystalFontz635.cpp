@@ -42,9 +42,14 @@ void CrystalFontz635::getHardwareFirmwareVersion() {
 
 void CrystalFontz635::clearLCD() {
     clearWriteBuffer();
+    clearReadBuffer();
     writeBuffer[0] = 0x06;
     writeBuffer[1] = 0;
+    expectedBuffer[0] = 0x40 | 0x06;
+    expectedBuffer[1] = 0;
+    updateBufferCRC ( expectedBuffer );
     sendPacket();
+    receivePacket(expectedBuffer);
 }
 
 void CrystalFontz635::setCursorPosition ( int row, int column ) {
@@ -81,7 +86,9 @@ void CrystalFontz635::receivePacket ( uint8_t expectedBuffer[] ) {
     int count = 0;
     int data = false;
     while ( ( ! done ) && ( millis() - tStart <= 500 ) ) {
-        if (stream->available() > 0) {
+        if (int i = stream->available() > 0) {
+            //Serial.print ( "avail has " );
+            //Serial.println ( i, DEC );
             readBuffer[count] = stream->read() & 0xFF;
         }
         count++;
