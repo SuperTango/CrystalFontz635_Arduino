@@ -1,9 +1,6 @@
 /**
- * CAN BUS
- *
- * Copyright (c) 2010 Sukkin Pang All rights reserved.
+ * Copyright (c) 2012 Alex Tang
  */
-
 #ifndef crystalfontz635__h
 #define crystalfontz635__h
 

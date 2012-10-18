@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2012 Alex Tang
+ */
 #include <SoftwareSerial.h>
 #include <CrystalFontz635.h>
 
