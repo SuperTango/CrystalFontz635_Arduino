@@ -41,6 +41,7 @@ class CrystalFontz635 {
     uint16_t get_crc ( uint8_t count, uint8_t *ptr );
     void init ( Stream *stream );
     void clearLCD();
+    void getHardwareFirmwareVersion();
     void writeString ( uint8_t row, uint8_t column, char *string );
     void setCursorPosition ( int row, int column );
 

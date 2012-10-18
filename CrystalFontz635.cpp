@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <avr/io.h>
 #include <inttypes.h>
+#include <SoftwareSerial.h>
 #include "CrystalFontz635.h"
 
 CrystalFontz635::CrystalFontz635() {
@@ -23,6 +24,16 @@ void CrystalFontz635::init ( Stream *stream2 ) {
 void CrystalFontz635::clearWriteBuffer() {
     memset ( buffer, 0, CFA635_WRITEBUFFER_SIZE );
 }
+
+//void CrystalFontz635::readData() {
+    
+void CrystalFontz635::getHardwareFirmwareVersion() {
+    clearWriteBuffer();
+    buffer[0] = 0x01;
+    buffer[1] = 0;
+    sendPacket();
+}
+
 
 void CrystalFontz635::clearLCD() {
     clearWriteBuffer();
