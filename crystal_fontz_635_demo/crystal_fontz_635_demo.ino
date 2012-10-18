@@ -88,7 +88,6 @@ void loop() {
         //String ( "Millis: " + String(millis()) ).toCharArray(str, 20);
         //crystalFontz635.getHardwareFirmwareVersion();
         //crystalFontz635.clearLCD();
-        //crystalFontz635.clearLCD();
         crystalFontz635.writeString (0, 0, "Millis:" );
         crystalFontz635.writeString (0, 8, ultoa ( millis(), buf, 10 ) );
         Serial.println ( millis() - t1 );
