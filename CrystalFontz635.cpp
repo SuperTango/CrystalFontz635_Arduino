@@ -239,14 +239,17 @@ uint8_t CrystalFontz635::processInput() {
                      ( readBuffers[currentReadBuffer][currentReadBufferSize - 2] == ( expectedCRC & 0xFF ) ) ) {
                     readBuffers[currentReadBuffer][0] = CFA635_READ;
                     currentReadState = CFA635_STATE_READING_COMMAND;
-                    if ( currentReadBuffer >= CFA635_READBUFFER_COUNT ) {
-                        currentReadBuffer = 0;
-                    }
                     tmpString.begin();
                     tmpString.print ( "input, buf: " );
                     tmpString.print ( currentReadBuffer, DEC );
-                    dumpPacket ( (char *)tmpBuffer, &(readBuffers[currentReadBuffer][1]) );
-                    currentReadBuffer++;
+                    //dumpPacket ( (char *)tmpBuffer, &(readBuffers[currentReadBuffer][1]) );
+                    incrementBufferIndex ( &currentReadBuffer );
+                        // if the currentReadBuffer index == nextReturnBuffer index, we've wrapped 
+                        // around, and we're going to lose the oldest Buffer entry, so increment
+                        // nextReturnBuffer
+                    if ( currentReadBuffer == nextReturnBuffer ) {
+                        incrementBufferIndex ( &nextReturnBuffer );
+                    }
                     numValidPackets++;
                 } else {
                         // validation failed
