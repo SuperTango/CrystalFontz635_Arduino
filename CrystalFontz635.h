@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <Stream.h>
+#include <PString.h>
 
 // set this to undef to save space.
 #define CFA635_DEBUG

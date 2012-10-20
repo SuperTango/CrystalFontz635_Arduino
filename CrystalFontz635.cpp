@@ -33,8 +33,6 @@ void CrystalFontz635::clearReadBuffer() {
     memset ( expectedBuffer, 0, CFA635_READBUFFER_SIZE );
 }
 
-//void CrystalFontz635::readData() {
-    
 void CrystalFontz635::getHardwareFirmwareVersion() {
     clearWriteBuffer();
     writeBuffer[0] = 0x01;
@@ -52,7 +50,7 @@ void CrystalFontz635::clearLCD() {
     expectedBuffer[1] = 0;
     updateBufferCRC ( expectedBuffer );
     sendPacket();
-    receivePacket(expectedBuffer);
+    //receivePacket(expectedBuffer);
 }
 
 void CrystalFontz635::setCursorPosition ( int row, int column ) {
