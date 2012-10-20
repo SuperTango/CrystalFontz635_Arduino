@@ -13,7 +13,10 @@
 #include <inttypes.h>
 #include <SoftwareSerial.h>
 #include "CrystalFontz635.h"
+#include <PString.h>
 
+uint8_t tmpBuffer[CFA635_LINEBUFFER_SIZE];
+PString tmpString((char*)tmpBuffer, sizeof(tmpBuffer));
 CrystalFontz635::CrystalFontz635() {
 }
 
@@ -61,7 +64,7 @@ void CrystalFontz635::setCursorPosition ( int row, int column ) {
     sendPacket();
 }
 
-void CrystalFontz635::writeString ( uint8_t row, uint8_t column, char *string ) {
+void CrystalFontz635::printAt ( uint8_t row, uint8_t column, char *string ) {
     clearWriteBuffer();
     clearReadBuffer();
     writeBuffer[0] = 0x1F;
@@ -77,7 +80,25 @@ void CrystalFontz635::writeString ( uint8_t row, uint8_t column, char *string ) 
     expectedBuffer[1] = 0;
     updateBufferCRC ( expectedBuffer );
     sendPacket();
-    receivePacket(expectedBuffer);
+    //receivePacket(expectedBuffer);
+}
+
+void CrystalFontz635::printAt ( uint8_t row, uint8_t column, uint8_t val, int type ) {
+    tmpString.begin();
+    tmpString.print ( val, type );
+    printAt ( row, column, (char *)tmpBuffer );
+}
+
+void CrystalFontz635::printAt ( uint8_t row, uint8_t column, uint32_t val, int type ) {
+    tmpString.begin();
+    tmpString.print ( val, type );
+    printAt ( row, column, (char *)tmpBuffer );
+}
+
+void CrystalFontz635::printAt ( uint8_t row, uint8_t column, double val, int8_t width, uint8_t precision ) {
+    //dtostrf ( val, width, precision, (char *)tmpBuffer );
+    sprintf ( (char *)tmpBuffer, "%8.3f", val );
+    printAt ( row, column, (char *)tmpBuffer );
 }
 
 void CrystalFontz635::receivePacket ( uint8_t expectedBuffer[] ) {
