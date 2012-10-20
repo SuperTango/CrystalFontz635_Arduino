@@ -18,3 +18,4 @@ test-output
 .*.swp
 .*.swo
 crctest_java
+out
