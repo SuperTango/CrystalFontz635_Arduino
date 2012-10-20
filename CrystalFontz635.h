@@ -21,7 +21,7 @@
 #define CFA635_WRITEBUFFER_SIZE 32
 #define CFA635_READBUFFER_SIZE 25
 #define CFA635_LINEBUFFER_SIZE 20
-#define CFA635_READBUFFER_COUNT 5
+#define CFA635_READBUFFER_COUNT 10
 
 #define CFA635_UNREAD 0
 #define CFA635_READ 1
@@ -47,9 +47,14 @@
  * is a read/unread flag, then the packet starts at byte 1.
  */
 
+typedef struct {
+    uint8_t type;
+    uint8_t length;
+    uint8_t data[];
+} Packet;
+
 class CrystalFontz635 {
   public:
-
     CrystalFontz635();
     uint16_t get_crc ( uint8_t count, uint8_t *ptr );
     void updateBufferCRC ( uint8_t buffer[] );
@@ -63,6 +68,8 @@ class CrystalFontz635 {
     void setCursorPosition ( int row, int column );
     void setLED ( uint8_t led, uint8_t redVal, uint8_t greenVal );
     uint8_t processInput();
+    Packet* getNextPacket();
+    void _dumpPacket ( char *str, uint8_t buffer[] );
 
   private:
     void clearWriteBuffer();
@@ -70,7 +77,6 @@ class CrystalFontz635 {
     void sendPacket();
     void receivePacket ( uint8_t expectedBuffer[] );
     #ifdef CFA635_DEBUG
-    void _dumpPacket ( char *str, uint8_t buffer[] );
     #endif
     uint8_t writeBuffer[CFA635_WRITEBUFFER_SIZE];
     uint8_t readBuffer[CFA635_READBUFFER_SIZE];
@@ -80,6 +86,8 @@ class CrystalFontz635 {
     uint8_t currentReadBuffer;
     uint8_t currentReadBufferSize;
     uint8_t currentReadState;
+    uint8_t nextReturnBuffer;
+    void incrementBufferIndex ( uint8_t *index );
 	
 };
 

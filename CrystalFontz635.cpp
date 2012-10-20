@@ -21,6 +21,7 @@ CrystalFontz635::CrystalFontz635() {
     currentReadBuffer = 0;
     currentReadBufferSize = 0;
     currentReadState = CFA635_STATE_READING_COMMAND;
+    nextReturnBuffer = 0;
 }
 
 void CrystalFontz635::init ( Stream *stream2 ) {
@@ -255,4 +256,22 @@ uint8_t CrystalFontz635::processInput() {
         }
     }
     return numValidPackets;
+}
+
+Packet* CrystalFontz635::getNextPacket() {
+    if ( readBuffers[nextReturnBuffer][0] ) {
+        Packet *packet = (Packet *)&(readBuffers[nextReturnBuffer][1]);
+        readBuffers[nextReturnBuffer][0] = 0;
+        incrementBufferIndex ( &nextReturnBuffer );
+        return packet;
+    } else {
+        return NULL;
+    }
+}
+
+void CrystalFontz635::incrementBufferIndex ( uint8_t *index ) {
+    (*index)++;
+    if ( *index >= CFA635_READBUFFER_COUNT ) {
+        *index = 0;
+    }
 }

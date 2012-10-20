@@ -27,8 +27,18 @@ void loop() {
     char str[20];
     unsigned long now = millis();
     char buf[8];
-    if ( crystalFontz635.processInput() ) {
-        Serial.println ( "Got a valid packet" );
+    Packet *packet;
+    crystalFontz635.processInput();
+    while ( packet = crystalFontz635.getNextPacket() ) {
+        if ( packet->type == CFA635_PACKET_TYPE_KEY_ACTIVITY ) {
+            if ( packet->data[0] == CFA635_KEY_ENTER_PRESS ) {
+                Serial.println ( "Got an ENTER key press" );
+            } else {
+                crystalFontz635.dumpPacket ( "Got a valid packet: ", (uint8_t *)packet );
+            }
+        } else {
+            Serial.println ( "Got a packet that we don't care about" );
+        }
     }
     /*
     if ( ( now - lastTime ) > 1000 ) {
