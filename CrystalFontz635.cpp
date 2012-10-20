@@ -53,6 +53,25 @@ void CrystalFontz635::clearLCD() {
     //receivePacket(expectedBuffer);
 }
 
+void CrystalFontz635::setLED ( uint8_t led, uint8_t redVal, uint8_t greenVal ) {
+    clearWriteBuffer();
+    clearReadBuffer();
+    writeBuffer[0] = 0x22;
+    writeBuffer[1] = 2;
+    writeBuffer[2] = 12 - (led * 2 );
+    writeBuffer[3] = redVal;
+    expectedBuffer[0] = 0x40 | 0x22;
+    expectedBuffer[1] = 0;
+    updateBufferCRC ( expectedBuffer );
+    sendPacket();
+    //receivePacket(expectedBuffer);
+
+    writeBuffer[2] = 11 - (led * 2 );
+    writeBuffer[3] = greenVal;
+    sendPacket();
+    //receivePacket(expectedBuffer);
+}
+
 void CrystalFontz635::setCursorPosition ( int row, int column ) {
     clearWriteBuffer();
     writeBuffer[0] = 0x0B;

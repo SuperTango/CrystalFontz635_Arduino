@@ -28,6 +28,8 @@ void loop() {
     unsigned long now = millis();
     char buf[8];
     if ( ( now - lastTime ) > 1000 ) {
+        crystalFontz635.setLED ( random(4) , random(100), random(100) );
+
         unsigned long t1 = millis();
         // TEST1: 40ms, 10,646 bytes
         //String ( "Millis: " + String(millis()) ).toCharArray(str, 20);
