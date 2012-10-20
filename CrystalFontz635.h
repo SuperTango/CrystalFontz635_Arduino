@@ -30,6 +30,27 @@
 #define CFA635_STATE_READING_SIZE 1
 #define CFA635_STATE_READING_GENERAL 2
 
+#define CFA635_PACKET_TYPE_PING 0x00
+#define CFA635_PACKET_TYPE_PING_RESPONSE 0x40 | CFA_PACKET_TYPE_PING
+#define CFA635_PACKET_TYPE_GET_HW_FW_INFO 0x01
+#define CFA635_PACKET_TYPE_GET_HW_FW_INFO_RESPONSE 0x40 | CFA_PACKET_TYPE_GET_HW_FW_INFO
+
+#define CFA635_PACKET_TYPE_KEY_ACTIVITY 0x80
+
+
+#define CFA635_KEY_UP_PRESS              1
+#define CFA635_KEY_DOWN_PRESS            2
+#define CFA635_KEY_LEFT_PRESS            3
+#define CFA635_KEY_RIGHT_PRESS           4
+#define CFA635_KEY_ENTER_PRESS           5
+#define CFA635_KEY_EXIT_PRESS            6
+#define CFA635_KEY_UP_RELEASE            7
+#define CFA635_KEY_DOWN_RELEASE          8
+#define CFA635_KEY_LEFT_RELEASE          9
+#define CFA635_KEY_RIGHT_RELEASE        10
+#define CFA635_KEY_ENTER_RELEASE        11
+#define CFA635_KEY_EXIT_RELEASE         12
+
 
 /*
  * This what the packet structure would look like, but we're not using
