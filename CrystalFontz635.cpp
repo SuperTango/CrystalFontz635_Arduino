@@ -179,7 +179,7 @@ void CrystalFontz635::sendPacket() {
     uint16_t crc;
     updateBufferCRC ( writeBuffer );
     stream->write ( writeBuffer, writeBuffer[1] + 4 );
-    dumpPacket ( "packet that was sent", writeBuffer );
+    //dumpPacket ( "packet that was sent", writeBuffer );
 }
 
 /*

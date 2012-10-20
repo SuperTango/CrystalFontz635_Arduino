@@ -10,8 +10,18 @@ CrystalFontz635 crystalFontz635;
 // host rx;LCD Tx: White, arduino 7
 //                                       rx, tx
 //SoftwareSerial lcdSerial = SoftwareSerial(7, 3);
-uint8_t buffer[256];
+uint8_t buffer[20];
+PString bufferString((char*)buffer, sizeof(buffer));
+
 unsigned long lastTime = 0;
+
+uint8_t ledValues[] = { 0, 5, 15, 25, 100 };
+int8_t redValue = 0;
+int8_t greenValue = 0;
+
+unsigned long now;
+Packet *packet;
+bool updateLED = false;
 
 void setup() {
     Serial.begin(115200);
@@ -23,22 +33,70 @@ void setup() {
 }
 
 void loop() {
-    int data = 0;
-    char str[20];
-    unsigned long now = millis();
-    char buf[8];
-    Packet *packet;
+    now = millis();
+    updateLED = false;
     crystalFontz635.processInput();
     while ( packet = crystalFontz635.getNextPacket() ) {
         if ( packet->type == CFA635_PACKET_TYPE_KEY_ACTIVITY ) {
-            if ( packet->data[0] == CFA635_KEY_ENTER_PRESS ) {
-                Serial.println ( "Got an ENTER key press" );
+            if ( CFA635_KEY_UP_PRESS == packet->data[0] ) {
+                redValue++;
+                if ( redValue > 4 ) {
+                    redValue = 4;
+                }
+                updateLED = true;
+            } else if ( CFA635_KEY_DOWN_PRESS == packet->data[0] ) {
+                redValue--;
+                if ( redValue < 0  ) {
+                    redValue = 0;
+                }
+                updateLED = true;
+            } else if ( CFA635_KEY_RIGHT_PRESS == packet->data[0] ) {
+                greenValue++;
+                if ( greenValue > 4 ) {
+                    greenValue = 4;
+                }
+                updateLED = true;
+            } else if ( CFA635_KEY_LEFT_PRESS == packet->data[0] ) {
+                greenValue--;
+                if ( greenValue < 0  ) {
+                    greenValue = 0;
+                }
+                updateLED = true;
+            } else if ( CFA635_KEY_ENTER_PRESS == packet->data[0] ) {
+                redValue = 4;
+                greenValue = 4;
+                updateLED = true;
+            } else if ( CFA635_KEY_EXIT_PRESS == packet->data[0] ) {
+                redValue = 0;
+                greenValue = 0;
+                updateLED = true;
             } else {
-                crystalFontz635.dumpPacket ( "Got a valid packet: ", (uint8_t *)packet );
+                //crystalFontz635.dumpPacket ( "Got a valid packet: ", (uint8_t *)packet );
             }
         } else {
-            Serial.println ( "Got a packet that we don't care about" );
+            //Serial.println ( "Got a packet that we don't care about" );
         }
+    }
+    if ( updateLED ) {
+        bufferString.begin();
+        bufferString.print ( "Red LED:   " );
+        if ( ledValues[redValue] < 10 ) {
+            bufferString.print ( "  " );
+        } else if ( ledValues[redValue] < 100 ) {
+            bufferString.print ( " " );
+        }
+        bufferString.print ( ledValues[redValue] );
+        crystalFontz635.printAt ( 1, 0, (char *)buffer );
+        bufferString.begin();
+        bufferString.print ( "Green LED: " );
+        if ( ledValues[greenValue] < 10 ) {
+            bufferString.print ( "  " );
+        } else if ( ledValues[greenValue] < 100 ) {
+            bufferString.print ( " " );
+        }
+        bufferString.print ( ledValues[greenValue] );
+        crystalFontz635.printAt ( 2, 0, (char *)buffer );
+        crystalFontz635.setLED ( 0, ledValues[redValue], ledValues[greenValue] );
     }
     /*
     if ( ( now - lastTime ) > 1000 ) {
