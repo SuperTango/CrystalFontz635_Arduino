@@ -18,6 +18,9 @@
 uint8_t tmpBuffer[CFA635_LINEBUFFER_SIZE];
 PString tmpString((char*)tmpBuffer, sizeof(tmpBuffer));
 CrystalFontz635::CrystalFontz635() {
+    currentReadBuffer = 0;
+    currentReadBufferSize = 0;
+    currentReadState = CFA635_STATE_READING_COMMAND;
 }
 
 void CrystalFontz635::init ( Stream *stream2 ) {
@@ -201,4 +204,55 @@ uint16_t CrystalFontz635::get_crc ( uint8_t count, uint8_t *ptr ) {
         } while (--i != 0 );
     }
     return ( ~crc );
+}
+
+uint8_t CrystalFontz635::processInput() {
+    uint8_t byteRead;
+    uint8_t numValidPackets = 0;
+    while ( int i = stream->available() > 0 ) {
+        byteRead = (uint8_t)stream->read() & 0xFF;
+        if ( currentReadState == CFA635_STATE_READING_COMMAND ) {
+            if ( byteRead && 0xC0 ) {
+                    // set state of buffer to unread.
+                currentReadBufferSize = 0;
+                readBuffers[currentReadBuffer][currentReadBufferSize++] = CFA635_UNREAD;
+                readBuffers[currentReadBuffer][currentReadBufferSize++] = byteRead;
+                currentReadState = CFA635_STATE_READING_SIZE;
+            }
+        } else if ( currentReadState == CFA635_STATE_READING_SIZE ) {
+                // bad size, reset state to beginning.
+            if ( byteRead >= 20 ) {
+                currentReadState = CFA635_STATE_READING_COMMAND;
+            } else {
+                readBuffers[currentReadBuffer][currentReadBufferSize++] = byteRead;
+                currentReadState = CFA635_STATE_READING_GENERAL;
+            }
+        } else {
+                // currentReadState = CFA635_STATE_READING_GENERAL
+            readBuffers[currentReadBuffer][currentReadBufferSize++] = byteRead;
+                // packet data length is readBuffers[currentReadBuffer][2] )
+            if ( currentReadBufferSize >= readBuffers[currentReadBuffer][2] + 5 ) {
+                uint16_t expectedCRC = get_crc ( readBuffers[currentReadBuffer][2] + 2, &(readBuffers[currentReadBuffer][1]) );
+                    // validate CRC
+                if ( ( readBuffers[currentReadBuffer][currentReadBufferSize - 1] == ( ( expectedCRC >> 8 ) & 0xFF ) ) &&
+                     ( readBuffers[currentReadBuffer][currentReadBufferSize - 2] == ( expectedCRC & 0xFF ) ) ) {
+                    readBuffers[currentReadBuffer][0] = CFA635_READ;
+                    currentReadState = CFA635_STATE_READING_COMMAND;
+                    if ( currentReadBuffer >= CFA635_READBUFFER_COUNT ) {
+                        currentReadBuffer = 0;
+                    }
+                    tmpString.begin();
+                    tmpString.print ( "input, buf: " );
+                    tmpString.print ( currentReadBuffer, DEC );
+                    dumpPacket ( (char *)tmpBuffer, &(readBuffers[currentReadBuffer][1]) );
+                    currentReadBuffer++;
+                    numValidPackets++;
+                } else {
+                        // validation failed
+                    currentReadState = CFA635_STATE_READING_COMMAND;
+                }
+            }
+        }
+    }
+    return numValidPackets;
 }

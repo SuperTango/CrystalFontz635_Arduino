@@ -19,7 +19,17 @@
 
 // TODO: Is this the proper size?
 #define CFA635_WRITEBUFFER_SIZE 32
-#define CFA635_READBUFFER_SIZE 24
+#define CFA635_READBUFFER_SIZE 25
+#define CFA635_LINEBUFFER_SIZE 20
+#define CFA635_READBUFFER_COUNT 5
+
+#define CFA635_UNREAD 0
+#define CFA635_READ 1
+
+#define CFA635_STATE_READING_COMMAND 0
+#define CFA635_STATE_READING_SIZE 1
+#define CFA635_STATE_READING_GENERAL 2
+
 
 /*
  * This what the packet structure would look like, but we're not using
@@ -31,6 +41,10 @@
  *       uint8_t *data;         // buffer[2-(data_length+2)]
  *       uint16_t CRC;          // buffer[data_length+2] (LSB is first!)
  *   } Command_Packet;
+ *
+ * Another data structure we're using is the readBuffers.  This is an array 
+ * of array of packets (with added meta info).  the first byte of the packet
+ * is a read/unread flag, then the packet starts at byte 1.
  */
 
 class CrystalFontz635 {
@@ -48,6 +62,7 @@ class CrystalFontz635 {
     void printAt ( uint8_t row, uint8_t column, double val, int8_t width, uint8_t precision );
     void setCursorPosition ( int row, int column );
     void setLED ( uint8_t led, uint8_t redVal, uint8_t greenVal );
+    uint8_t processInput();
 
   private:
     void clearWriteBuffer();
@@ -61,6 +76,10 @@ class CrystalFontz635 {
     uint8_t readBuffer[CFA635_READBUFFER_SIZE];
     uint8_t expectedBuffer[CFA635_READBUFFER_SIZE];
     Stream *stream;
+    uint8_t readBuffers[CFA635_READBUFFER_COUNT][CFA635_READBUFFER_SIZE];
+    uint8_t currentReadBuffer;
+    uint8_t currentReadBufferSize;
+    uint8_t currentReadState;
 	
 };
 

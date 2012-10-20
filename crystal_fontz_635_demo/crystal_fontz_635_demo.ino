@@ -27,6 +27,10 @@ void loop() {
     char str[20];
     unsigned long now = millis();
     char buf[8];
+    if ( crystalFontz635.processInput() ) {
+        Serial.println ( "Got a valid packet" );
+    }
+    /*
     if ( ( now - lastTime ) > 1000 ) {
         crystalFontz635.setLED ( random(4) , random(100), random(100) );
 
