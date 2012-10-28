@@ -255,7 +255,7 @@ uint8_t CrystalFontz635::processInput() {
                     }
                     numValidPackets++;
                 } else {
-                        // validation failed
+                        // CRC validation failed
                     currentReadState = CFA635_STATE_READING_COMMAND;
                 }
             }
