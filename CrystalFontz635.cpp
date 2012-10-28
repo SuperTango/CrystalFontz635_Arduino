@@ -219,7 +219,7 @@ uint8_t CrystalFontz635::processInput() {
             if ( byteRead && 0xC0 ) {
                     // set state of buffer to unread.
                 currentReadBufferSize = 0;
-                readBuffers[currentReadBuffer][currentReadBufferSize++] = CFA635_UNREAD;
+                readBuffers[currentReadBuffer][currentReadBufferSize++] = CFA635_READ;
                 readBuffers[currentReadBuffer][currentReadBufferSize++] = byteRead;
                 currentReadState = CFA635_STATE_READING_SIZE;
             }
