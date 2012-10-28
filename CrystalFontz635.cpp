@@ -240,7 +240,7 @@ uint8_t CrystalFontz635::processInput() {
                     // validate CRC
                 if ( ( readBuffers[currentReadBuffer][currentReadBufferSize - 1] == ( ( expectedCRC >> 8 ) & 0xFF ) ) &&
                      ( readBuffers[currentReadBuffer][currentReadBufferSize - 2] == ( expectedCRC & 0xFF ) ) ) {
-                    readBuffers[currentReadBuffer][0] = CFA635_READ;
+                    readBuffers[currentReadBuffer][0] = CFA635_UNREAD;
                     currentReadState = CFA635_STATE_READING_COMMAND;
                     tmpString.begin();
                     tmpString.print ( "input, buf: " );
@@ -265,9 +265,9 @@ uint8_t CrystalFontz635::processInput() {
 }
 
 Packet* CrystalFontz635::getNextPacket() {
-    if ( readBuffers[nextReturnBuffer][0] ) {
-        Packet *packet = (Packet *)&(readBuffers[nextReturnBuffer][1]);
-        readBuffers[nextReturnBuffer][0] = 0;
+    if ( readBuffers[nextReturnBuffer][0] == CFA635_UNREAD ) {
+        packet = (Packet *)&(readBuffers[nextReturnBuffer][1]);
+        readBuffers[nextReturnBuffer][0] = CFA635_READ;
         incrementBufferIndex ( &nextReturnBuffer );
         return packet;
     } else {

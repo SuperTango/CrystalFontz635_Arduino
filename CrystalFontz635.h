@@ -109,6 +109,7 @@ class CrystalFontz635 {
     uint8_t currentReadState;
     uint8_t nextReturnBuffer;
     void incrementBufferIndex ( uint8_t *index );
+    Packet *packet;
 	
 };
 
