@@ -123,6 +123,7 @@ void CrystalFontz635::printAt ( uint8_t row, uint8_t column, double val, int8_t 
     printAt ( row, column, (char *)tmpBuffer );
 }
 
+/*
 void CrystalFontz635::receivePacket ( uint8_t expectedBuffer[] ) {
     unsigned long tStart = millis();
     bool done = 0;
@@ -131,7 +132,7 @@ void CrystalFontz635::receivePacket ( uint8_t expectedBuffer[] ) {
     while ( ( ! done ) && ( millis() - tStart <= 500 ) ) {
         if (int i = stream->available() > 0) {
             //Serial.print ( "avail has " );
-            //Serial.println ( i, DEC );
+            Serial.println ( i, DEC );
             readBuffer[count] = stream->read() & 0xFF;
         }
         count++;
@@ -142,6 +143,7 @@ void CrystalFontz635::receivePacket ( uint8_t expectedBuffer[] ) {
     dumpPacket ( "packet that was expected: ", expectedBuffer );
     dumpPacket ( "packet that was received: ", readBuffer );
 }
+*/
 
 #ifdef CFA635_DEBUG
 void CrystalFontz635::_dumpPacket ( char *str, uint8_t buffer[] ) {
