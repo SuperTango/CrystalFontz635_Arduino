@@ -22,6 +22,7 @@ CrystalFontz635::CrystalFontz635() {
     currentReadBufferSize = 0;
     currentReadState = CFA635_STATE_READING_COMMAND;
     nextReturnBuffer = 0;
+    memset ( readBuffers, 0, CFA635_READBUFFER_SIZE * CFA635_READBUFFER_COUNT );
 }
 
 void CrystalFontz635::init ( Stream *stream2 ) {
