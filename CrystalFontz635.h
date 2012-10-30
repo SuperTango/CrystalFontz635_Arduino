@@ -94,7 +94,6 @@ class CrystalFontz635 {
 
   private:
     void clearWriteBuffer();
-    void clearReadBuffer();
     void sendPacket();
     void receivePacket ( uint8_t expectedBuffer[] );
     #ifdef CFA635_DEBUG

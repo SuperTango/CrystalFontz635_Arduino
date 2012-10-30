@@ -33,12 +33,6 @@ void CrystalFontz635::clearWriteBuffer() {
     memset ( writeBuffer, 0, CFA635_WRITEBUFFER_SIZE );
 }
 
-void CrystalFontz635::clearReadBuffer() {
-    memset ( readBuffer, 0, CFA635_READBUFFER_SIZE );
-    memset ( expectedBuffer, 0, CFA635_READBUFFER_SIZE );
-}
-
-void CrystalFontz635::getHardwareFirmwareVersion() {
     clearWriteBuffer();
     writeBuffer[0] = 0x01;
     writeBuffer[1] = 0;
@@ -48,7 +42,6 @@ void CrystalFontz635::getHardwareFirmwareVersion() {
 
 void CrystalFontz635::clearLCD() {
     clearWriteBuffer();
-    clearReadBuffer();
     writeBuffer[0] = 0x06;
     writeBuffer[1] = 0;
     expectedBuffer[0] = 0x40 | 0x06;
@@ -60,7 +53,6 @@ void CrystalFontz635::clearLCD() {
 
 void CrystalFontz635::setLED ( uint8_t led, uint8_t redVal, uint8_t greenVal ) {
     clearWriteBuffer();
-    clearReadBuffer();
     writeBuffer[0] = 0x22;
     writeBuffer[1] = 2;
     writeBuffer[2] = 12 - (led * 2 );
@@ -88,7 +80,6 @@ void CrystalFontz635::setCursorPosition ( int row, int column ) {
 
 void CrystalFontz635::printAt ( uint8_t row, uint8_t column, char *string ) {
     clearWriteBuffer();
-    clearReadBuffer();
     writeBuffer[0] = 0x1F;
     if ( string == NULL ) {
         writeBuffer[1] = 0;
