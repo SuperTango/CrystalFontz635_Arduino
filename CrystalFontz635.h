@@ -78,7 +78,6 @@ typedef struct {
 class CrystalFontz635 {
   public:
     CrystalFontz635();
-    void updateBufferCRC ( uint8_t buffer[] );
     void init ( Stream *stream );
     bool clearLCD ( bool async = false );
     Packet* getHardwareFirmwareVersion ( Packet *packet );
@@ -112,6 +111,7 @@ class CrystalFontz635 {
     uint8_t nextBufferIndex ( uint8_t index );
     uint8_t previousBufferIndex ( uint8_t index );
     Packet dataPacket;
+    void updateBufferCRC ( uint8_t buffer[] );
 	
 };
 
