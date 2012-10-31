@@ -229,5 +229,63 @@ void CrystalFontz635::incrementBufferIndex ( uint8_t *index ) {
     (*index)++;
     if ( *index >= CFA635_READBUFFER_COUNT ) {
         *index = 0;
+
+/*
+ * These functions are used for testing.
+ */
+void CrystalFontz635::setPacket ( Packet* inputPacket ) {
+    Serial.print ( "Setting Packet.  CurrentReadBuffer is: " );
+    Serial.print ( currentReadBuffer );
+    memcpy ( &(readBuffers[currentReadBuffer][1]), inputPacket, CFA635_PACKETDATA_MAX );
+    readBuffers[currentReadBuffer][0] = CFA635_UNREAD;
+    updateBufferCRC ( &(readBuffers[currentReadBuffer][1]) );
+    currentReadBuffer = nextBufferIndex ( currentReadBuffer );
+    Serial.print ( ". CurrentReadBuffer is now: " );
+    Serial.println ( currentReadBuffer );
+    dumpPacket ( "setPacket", (uint8_t *)inputPacket );
+}
+
+void CrystalFontz635::setPacketPositions ( uint8_t readPacketPosition, uint8_t writePacketPosition ) {
+    uint8_t index = readPacketPosition;
+    uint8_t status = CFA635_UNREAD;
+    currentReadBuffer = writePacketPosition;
+    nextReturnBuffer = readPacketPosition;;
+    do {
+        if ( index == writePacketPosition ) {
+            status = CFA635_READ;
+        }
+        readBuffers[index][0] = status;
+        index = nextBufferIndex ( index );
+    } while ( index != readPacketPosition );
+}
+
+void CrystalFontz635::dumpReadBuffers() {
+    Serial.print  ( "Dumping Buffers. currentReadBuffer: " );
+    Serial.print ( currentReadBuffer );
+    Serial.print  ( ", nextReturnBuffer is: " );
+    Serial.println ( nextReturnBuffer );
+    for ( uint8_t i = 0; i < CFA635_READBUFFER_COUNT; i++ ) {
+        tmpString.begin();
+        if ( i == currentReadBuffer ) {
+            tmpString.print ( "W" );
+        } else {
+            tmpString.print ( " " );
+        }
+        if ( i == nextReturnBuffer ) {
+            tmpString.print ( "R" );
+        } else {
+            tmpString.print ( " " );
+        }
+        tmpString.print ( i, DEC );
+        tmpString.print ( ", S:" );
+        if ( readBuffers[i][0] == CFA635_UNREAD ) {
+            tmpString.print ( "U" );
+        } else if ( readBuffers[i][0] == CFA635_READ ) {
+            tmpString.print ( "R" );
+        } else {
+            tmpString.print ( "ERROR" );
+        }
+        tmpString.print ( readBuffers[i][0], DEC );
+        dumpPacket ( (char *)tmpBuffer, &(readBuffers[i][1]) );
     }
 }
