@@ -102,28 +102,23 @@ void CrystalFontz635::printAt ( uint8_t row, uint8_t column, double val, int8_t 
 
 #ifdef CFA635_DEBUG
 void CrystalFontz635::_dumpPacket ( char *str, uint8_t buffer[] ) {
-    Serial.print ( "Dumping Packet: " );
-    Serial.println ( str );
-    Serial.print ( "  Command: " );
-    Serial.println ( (uint8_t)buffer[0], HEX );
-    Serial.print ( "  length:  " );
-    Serial.println ( (uint8_t)buffer[1], HEX );
+    Serial.print ( "  Dumping Packet: " );
+    Serial.print ( str );
+    Serial.print ( ", C: " );
+    Serial.print ( (uint8_t)buffer[0], HEX );
+    Serial.print ( ", L:" );
+    Serial.print ( (uint8_t)buffer[1], HEX );
     for ( int i = 2; i < ( buffer[1] + 2 ); i++ ) {
-        Serial.print ( "  data " );
-        Serial.print ( i - 2, DEC );
-        Serial.print ( ":  " );
-        Serial.println ( buffer[i], HEX );
+        if ( i == 2 ) {
+            Serial.print ( ", D: " );
+        } else {
+            Serial.print ( " " );
+        }
+        Serial.print ( buffer[i], HEX );
     }
+    Serial.print ( ", CRC: " );
     uint16_t crc = ( ( buffer[buffer[1] + 3] << 8 ) & 0xFF00 ) | buffer[buffer[1] + 2] & 0xFF;
-
-    Serial.print ( "  CRC:     " );
-    Serial.print ( crc, HEX );
-    Serial.print ( " (" );
-    Serial.print ( (uint8_t)buffer[buffer[1] + 2], HEX );
-    Serial.print ( ", " );
-    Serial.print ( (uint8_t)buffer[buffer[1] + 3], HEX );
-    Serial.println ( ")" );
-    Serial.println ( "Done" );
+    Serial.println ( crc, HEX );
 }
 #endif
 
