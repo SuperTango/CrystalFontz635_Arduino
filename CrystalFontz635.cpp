@@ -124,15 +124,27 @@ void CrystalFontz635::_dumpPacket ( char *str, uint8_t buffer[] ) {
 
 void CrystalFontz635::updateBufferCRC ( uint8_t buffer[] ) {
     uint16_t crc = get_crc ( buffer[1] + 2, buffer );
-    buffer[buffer[1] + 2] = crc & 0XFF;
-    buffer[buffer[1] + 3] = ( crc >> 8 ) & 0XFF;
+    buffer[buffer[1] + 2] = (uint8_t)(crc & 0XFF);
+    buffer[buffer[1] + 3] = (uint8_t)(( crc >> 8 ) & 0XFF);
 }
 
-void CrystalFontz635::sendPacket() {
-    uint16_t crc;
+Packet* CrystalFontz635::sendPacket ( uint8_t writeBuffer[], uint8_t type, Packet *returnPacket ) {
     updateBufferCRC ( writeBuffer );
     stream->write ( writeBuffer, writeBuffer[1] + 4 );
-    //dumpPacket ( "packet that was sent", writeBuffer );
+
+    if ( returnPacket ) {
+        unsigned long tStart = millis();
+        bool done = false;
+        int count = 0;
+        while ( ( ! done ) && ( ( millis() - tStart ) <= CFA635_MAX_RESPONSE_TIME ) ) {
+            processInput();
+            if ( getNextPacketOfType ( type, returnPacket ) ) {
+                return returnPacket;
+            }
+        }
+    }
+    Serial.println ( "sendPacket didn't get a valid response" );
+    return NULL;
 }
 
 /*
@@ -192,16 +204,12 @@ uint8_t CrystalFontz635::processInput() {
                      ( readBuffers[currentReadBuffer][currentReadBufferSize - 2] == ( expectedCRC & 0xFF ) ) ) {
                     readBuffers[currentReadBuffer][0] = CFA635_UNREAD;
                     currentReadState = CFA635_STATE_READING_COMMAND;
-                    tmpString.begin();
-                    tmpString.print ( "input, buf: " );
-                    tmpString.print ( currentReadBuffer, DEC );
-                    //dumpPacket ( (char *)tmpBuffer, &(readBuffers[currentReadBuffer][1]) );
-                    incrementBufferIndex ( &currentReadBuffer );
+                    currentReadBuffer = nextBufferIndex ( currentReadBuffer );
                         // if the currentReadBuffer index == nextReturnBuffer index, we've wrapped 
                         // around, and we're going to lose the oldest Buffer entry, so increment
                         // nextReturnBuffer
                     if ( currentReadBuffer == nextReturnBuffer ) {
-                        incrementBufferIndex ( &nextReturnBuffer );
+                        nextReturnBuffer = nextBufferIndex ( nextReturnBuffer );
                     }
                     numValidPackets++;
                 } else {
@@ -214,21 +222,68 @@ uint8_t CrystalFontz635::processInput() {
     return numValidPackets;
 }
 
-Packet* CrystalFontz635::getNextPacket() {
+Packet* CrystalFontz635::getNextPacket ( Packet *packet ) {
     if ( readBuffers[nextReturnBuffer][0] == CFA635_UNREAD ) {
         packet = (Packet *)&(readBuffers[nextReturnBuffer][1]);
         readBuffers[nextReturnBuffer][0] = CFA635_READ;
-        incrementBufferIndex ( &nextReturnBuffer );
+        nextReturnBuffer = nextBufferIndex ( nextReturnBuffer );
         return packet;
     } else {
         return NULL;
     }
 }
 
-void CrystalFontz635::incrementBufferIndex ( uint8_t *index ) {
-    (*index)++;
-    if ( *index >= CFA635_READBUFFER_COUNT ) {
-        *index = 0;
+Packet* CrystalFontz635::getNextPacketOfType ( uint8_t type, Packet *packet ) {
+    uint8_t index = nextReturnBuffer;
+    while ( index != currentReadBuffer ) {
+        if ( ( readBuffers[index][0] == CFA635_UNREAD ) && ( readBuffers[index][1] == type ) ) {
+            readBuffers[index][0] = CFA635_READ;
+            memcpy ( packet, &(readBuffers[index][1]), sizeof ( Packet )   );
+            compactReadBuffers ( index );
+            return packet;
+        } else {
+            index = nextBufferIndex ( index );
+        }
+    }
+    return NULL;
+}
+
+void CrystalFontz635::compactReadBuffers ( uint8_t index ) {
+    if ( index == nextReturnBuffer ) {
+        nextReturnBuffer = nextBufferIndex ( nextReturnBuffer );
+    } else if ( index == previousBufferIndex ( currentReadBuffer ) ) {
+        currentReadBuffer = previousBufferIndex ( currentReadBuffer );
+    } else if ( currentReadBuffer > index ) {
+        memmove ( readBuffers[index], readBuffers[index + 1], ( currentReadBuffer - index ) * CFA635_READBUFFER_SIZE );
+        currentReadBuffer = previousBufferIndex ( currentReadBuffer );
+    } else if ( currentReadBuffer < index ) {
+            // the length is actually ( ( CFA635_READBUFFER_COUNT - 1 ) - ( index + 1 ) )
+        memmove ( readBuffers[index], readBuffers[index + 1], ( CFA635_READBUFFER_COUNT - index ) * CFA635_READBUFFER_SIZE );
+        if ( currentReadBuffer > 0 ) {
+            memmove ( readBuffers[CFA635_READBUFFER_COUNT - 1], readBuffers[0],  CFA635_READBUFFER_SIZE );
+            memmove ( readBuffers[0], readBuffers[1], currentReadBuffer * CFA635_READBUFFER_SIZE );
+        }
+        currentReadBuffer = previousBufferIndex ( currentReadBuffer );
+    }
+}
+
+uint8_t CrystalFontz635::nextBufferIndex ( uint8_t index ) {
+    if ( index >= ( CFA635_READBUFFER_COUNT - 1 ) ) {
+        index = 0;
+    } else {
+        index++;
+    }
+    return index;
+}
+
+uint8_t CrystalFontz635::previousBufferIndex ( uint8_t index ) {
+    if ( index == 0 ) {
+        index = ( CFA635_READBUFFER_COUNT - 1 );
+    } else {
+        index--;
+    }
+    return index;
+}
 
 /*
  * These functions are used for testing.

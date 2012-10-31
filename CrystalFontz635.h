@@ -90,7 +90,8 @@ class CrystalFontz635 {
     void setCursorPosition ( int row, int column );
     void setLED ( uint8_t led, uint8_t redVal, uint8_t greenVal );
     uint8_t processInput();
-    Packet* getNextPacket();
+    Packet* getNextPacket ( Packet *packet );
+    Packet* getNextPacketOfType ( uint8_t type, Packet *packet );
     void _dumpPacket ( char *str, uint8_t buffer[] );
     // for testing only...
     void setPacket ( Packet* inputPacket );
