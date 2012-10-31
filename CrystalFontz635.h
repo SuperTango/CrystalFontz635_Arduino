@@ -17,7 +17,7 @@
 #define dumpPacket(x,y)
 #endif
 
-// TODO: Is this the proper size?
+#define CFA635_MAX_RESPONSE_TIME 400 // in ms.
 #define CFA635_WRITEBUFFER_SIZE 32
 #define CFA635_PACKETDATA_MAX 20
 #define CFA635_READBUFFER_SIZE CFA635_PACKETDATA_MAX + 5
@@ -78,17 +78,16 @@ typedef struct {
 class CrystalFontz635 {
   public:
     CrystalFontz635();
-    uint16_t get_crc ( uint8_t count, uint8_t *ptr );
     void updateBufferCRC ( uint8_t buffer[] );
     void init ( Stream *stream );
-    void clearLCD();
-    void getHardwareFirmwareVersion();
-    void printAt ( uint8_t row, uint8_t column, char *string );
-    void printAt ( uint8_t row, uint8_t column, uint8_t val, int type = DEC );
-    void printAt ( uint8_t row, uint8_t column, uint32_t val, int type = DEC);
-    void printAt ( uint8_t row, uint8_t column, double val, int8_t width, uint8_t precision );
-    void setCursorPosition ( int row, int column );
-    void setLED ( uint8_t led, uint8_t redVal, uint8_t greenVal );
+    bool clearLCD ( bool async = false );
+    Packet* getHardwareFirmwareVersion ( Packet *packet );
+    bool printAt ( uint8_t row, uint8_t column, char *string, bool async = false );
+    bool printAt ( uint8_t row, uint8_t column, uint8_t val, int type = DEC, bool async = false );
+    bool printAt ( uint8_t row, uint8_t column, uint32_t val, int type = DEC, bool async = false);
+    bool printAt ( uint8_t row, uint8_t column, double val, int8_t width, uint8_t precision, bool async = false );
+    bool setCursorPosition ( int row, int column, bool async = false );
+    bool setLED ( uint8_t led, uint8_t redVal, uint8_t greenVal, bool async = false );
     uint8_t processInput();
     Packet* getNextPacket ( Packet *packet );
     Packet* getNextPacketOfType ( uint8_t type, Packet *packet );
@@ -99,10 +98,10 @@ class CrystalFontz635 {
     void dumpReadBuffers();
 
   private:
+    uint16_t get_crc ( uint8_t count, uint8_t *ptr );
     void clearWriteBuffer();
+    Packet * sendPacket ( uint8_t writeBuffer[], uint8_t type, Packet *returnPacket = NULL );
     uint8_t writeBuffer[CFA635_WRITEBUFFER_SIZE];
-    uint8_t readBuffer[CFA635_READBUFFER_SIZE];
-    uint8_t expectedBuffer[CFA635_READBUFFER_SIZE];
     Stream *stream;
     uint8_t readBuffers[CFA635_READBUFFER_COUNT][CFA635_READBUFFER_SIZE];
     uint8_t currentReadBuffer;
@@ -112,6 +111,7 @@ class CrystalFontz635 {
     void compactReadBuffers ( uint8_t index );
     uint8_t nextBufferIndex ( uint8_t index );
     uint8_t previousBufferIndex ( uint8_t index );
+    Packet dataPacket;
 	
 };
 

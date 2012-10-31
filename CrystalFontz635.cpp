@@ -33,42 +33,68 @@ void CrystalFontz635::clearWriteBuffer() {
     memset ( writeBuffer, 0, CFA635_WRITEBUFFER_SIZE );
 }
 
+Packet* CrystalFontz635::getHardwareFirmwareVersion ( Packet *returnPacket ) {
     clearWriteBuffer();
     writeBuffer[0] = 0x01;
     writeBuffer[1] = 0;
-    sendPacket();
+    return sendPacket ( writeBuffer, 0x41, returnPacket );
 }
 
-
-void CrystalFontz635::clearLCD() {
+bool CrystalFontz635::clearLCD ( bool async ) {
     clearWriteBuffer();
     writeBuffer[0] = 0x06;
     writeBuffer[1] = 0;
+    Serial.println ( (uint16_t)&dataPacket, HEX );
+    if ( ! async ) {
+        Packet *packet = sendPacket ( writeBuffer, 0x46, &dataPacket );
+        return ( packet ) ? true : false;
+    } else {
+        sendPacket ( writeBuffer, 0x46, NULL );
+        return true; 
+    }
 }
 
-void CrystalFontz635::setLED ( uint8_t led, uint8_t redVal, uint8_t greenVal ) {
+bool CrystalFontz635::setLED ( uint8_t led, uint8_t redVal, uint8_t greenVal, bool async ) {
     clearWriteBuffer();
     writeBuffer[0] = 0x22;
     writeBuffer[1] = 2;
     writeBuffer[2] = 12 - (led * 2 );
     writeBuffer[3] = redVal;
-    sendPacket();
+    if ( ! async ) {
+        Packet *packet = sendPacket ( writeBuffer, 0x62, &dataPacket );
+        if ( packet == NULL ) {
+            return false;
+        }
+    } else {
+        sendPacket ( writeBuffer, 0x62, NULL );
+    }
 
     writeBuffer[2] = 11 - (led * 2 );
     writeBuffer[3] = greenVal;
-    sendPacket();
+    if ( ! async ) {
+        Packet *packet = sendPacket ( writeBuffer, 0x62, &dataPacket );
+        return ( packet ) ? true : false;
+    } else {
+        sendPacket ( writeBuffer, 0x62, NULL );
+        return true; 
+    }
 }
 
-void CrystalFontz635::setCursorPosition ( int row, int column ) {
+bool CrystalFontz635::setCursorPosition ( int row, int column, bool async ) {
     clearWriteBuffer();
     writeBuffer[0] = 0x0B;
     writeBuffer[1] = 2;
     writeBuffer[2] = column;
     writeBuffer[3] = row;
-    sendPacket();
+    Packet *packet = sendPacket ( writeBuffer, 0x4B, &dataPacket );
+    if ( async ) {
+        return true;
+    } else {
+        return ( packet ) ? true : false;
+    }
 }
 
-void CrystalFontz635::printAt ( uint8_t row, uint8_t column, char *string ) {
+bool CrystalFontz635::printAt ( uint8_t row, uint8_t column, char *string, bool async ) {
     clearWriteBuffer();
     writeBuffer[0] = 0x1F;
     if ( string == NULL ) {
@@ -79,25 +105,30 @@ void CrystalFontz635::printAt ( uint8_t row, uint8_t column, char *string ) {
     }
     writeBuffer[2] = column;
     writeBuffer[3] = row;
-    sendPacket();
+    Packet *packet = sendPacket ( writeBuffer, 0x5F, &dataPacket );
+    if ( async ) {
+        return true;
+    } else {
+        return ( packet ) ? true : false;
+    }
 }
 
-void CrystalFontz635::printAt ( uint8_t row, uint8_t column, uint8_t val, int type ) {
+bool CrystalFontz635::printAt ( uint8_t row, uint8_t column, uint8_t val, int type, bool async ) {
     tmpString.begin();
     tmpString.print ( val, type );
-    printAt ( row, column, (char *)tmpBuffer );
+    return printAt ( row, column, (char *)tmpBuffer, async );
 }
 
-void CrystalFontz635::printAt ( uint8_t row, uint8_t column, uint32_t val, int type ) {
+bool CrystalFontz635::printAt ( uint8_t row, uint8_t column, uint32_t val, int type, bool async ) {
     tmpString.begin();
     tmpString.print ( val, type );
-    printAt ( row, column, (char *)tmpBuffer );
+    return printAt ( row, column, (char *)tmpBuffer, async );
 }
 
-void CrystalFontz635::printAt ( uint8_t row, uint8_t column, double val, int8_t width, uint8_t precision ) {
+bool CrystalFontz635::printAt ( uint8_t row, uint8_t column, double val, int8_t width, uint8_t precision, bool async ) {
     //dtostrf ( val, width, precision, (char *)tmpBuffer );
     sprintf ( (char *)tmpBuffer, "%8.3f", val );
-    printAt ( row, column, (char *)tmpBuffer );
+    return printAt ( row, column, (char *)tmpBuffer, async );
 }
 
 #ifdef CFA635_DEBUG
