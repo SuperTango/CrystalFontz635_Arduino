@@ -79,9 +79,6 @@ void CrystalFontz635::printAt ( uint8_t row, uint8_t column, char *string ) {
     }
     writeBuffer[2] = column;
     writeBuffer[3] = row;
-    expectedBuffer[0] = 0x40 | 0x1F;
-    expectedBuffer[1] = 0;
-    updateBufferCRC ( expectedBuffer );
     sendPacket();
 }
 

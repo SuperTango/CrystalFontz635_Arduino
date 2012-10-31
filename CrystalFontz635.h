@@ -94,9 +94,6 @@ class CrystalFontz635 {
 
   private:
     void clearWriteBuffer();
-    void sendPacket();
-    #ifdef CFA635_DEBUG
-    #endif
     uint8_t writeBuffer[CFA635_WRITEBUFFER_SIZE];
     uint8_t readBuffer[CFA635_READBUFFER_SIZE];
     uint8_t expectedBuffer[CFA635_READBUFFER_SIZE];
