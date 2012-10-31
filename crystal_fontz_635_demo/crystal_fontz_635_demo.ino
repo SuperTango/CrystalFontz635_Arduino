@@ -29,12 +29,12 @@ void setup() {
     //lcdSerial.begin(115200);
     crystalFontz635.init ( &Serial1 );
     crystalFontz635.clearLCD ( true );
+    updateLED = true;
     //crystalFontz635.getHardwareFirmwareVersion();
 }
 
 void loop() {
     now = millis();
-    updateLED = false;
     crystalFontz635.processInput();
     //if ( ( now - lastTime ) > 1000 ) {
         //lastTime = now;
@@ -103,6 +103,7 @@ void loop() {
         bufferString.print ( ledValues[greenValue] );
         crystalFontz635.printAt ( 2, 0, (char *)buffer );
         crystalFontz635.setLED ( 0, ledValues[redValue], ledValues[greenValue] );
+        updateLED = false;
     }
     /*
     if ( ( now - lastTime ) > 1000 ) {
