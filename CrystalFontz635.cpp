@@ -44,11 +44,6 @@ void CrystalFontz635::clearLCD() {
     clearWriteBuffer();
     writeBuffer[0] = 0x06;
     writeBuffer[1] = 0;
-    expectedBuffer[0] = 0x40 | 0x06;
-    expectedBuffer[1] = 0;
-    updateBufferCRC ( expectedBuffer );
-    sendPacket();
-    //receivePacket(expectedBuffer);
 }
 
 void CrystalFontz635::setLED ( uint8_t led, uint8_t redVal, uint8_t greenVal ) {
@@ -57,16 +52,11 @@ void CrystalFontz635::setLED ( uint8_t led, uint8_t redVal, uint8_t greenVal ) {
     writeBuffer[1] = 2;
     writeBuffer[2] = 12 - (led * 2 );
     writeBuffer[3] = redVal;
-    expectedBuffer[0] = 0x40 | 0x22;
-    expectedBuffer[1] = 0;
-    updateBufferCRC ( expectedBuffer );
     sendPacket();
-    //receivePacket(expectedBuffer);
 
     writeBuffer[2] = 11 - (led * 2 );
     writeBuffer[3] = greenVal;
     sendPacket();
-    //receivePacket(expectedBuffer);
 }
 
 void CrystalFontz635::setCursorPosition ( int row, int column ) {
@@ -93,7 +83,6 @@ void CrystalFontz635::printAt ( uint8_t row, uint8_t column, char *string ) {
     expectedBuffer[1] = 0;
     updateBufferCRC ( expectedBuffer );
     sendPacket();
-    //receivePacket(expectedBuffer);
 }
 
 void CrystalFontz635::printAt ( uint8_t row, uint8_t column, uint8_t val, int type ) {
@@ -113,28 +102,6 @@ void CrystalFontz635::printAt ( uint8_t row, uint8_t column, double val, int8_t 
     sprintf ( (char *)tmpBuffer, "%8.3f", val );
     printAt ( row, column, (char *)tmpBuffer );
 }
-
-/*
-void CrystalFontz635::receivePacket ( uint8_t expectedBuffer[] ) {
-    unsigned long tStart = millis();
-    bool done = 0;
-    int count = 0;
-    int data = false;
-    while ( ( ! done ) && ( millis() - tStart <= 500 ) ) {
-        if (int i = stream->available() > 0) {
-            //Serial.print ( "avail has " );
-            Serial.println ( i, DEC );
-            readBuffer[count] = stream->read() & 0xFF;
-        }
-        count++;
-        if ( count >= ( expectedBuffer[1] + 4 ) ) {
-            done = true;
-        }
-    }
-    dumpPacket ( "packet that was expected: ", expectedBuffer );
-    dumpPacket ( "packet that was received: ", readBuffer );
-}
-*/
 
 #ifdef CFA635_DEBUG
 void CrystalFontz635::_dumpPacket ( char *str, uint8_t buffer[] ) {
