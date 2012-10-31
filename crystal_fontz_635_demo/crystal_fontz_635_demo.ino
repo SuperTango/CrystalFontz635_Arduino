@@ -28,15 +28,20 @@ void setup() {
     Serial1.begin(115200);
     //lcdSerial.begin(115200);
     crystalFontz635.init ( &Serial1 );
-    crystalFontz635.clearLCD();
-    crystalFontz635.getHardwareFirmwareVersion();
+    crystalFontz635.clearLCD ( true );
+    //crystalFontz635.getHardwareFirmwareVersion();
 }
 
 void loop() {
     now = millis();
     updateLED = false;
     crystalFontz635.processInput();
-    while ( packet = crystalFontz635.getNextPacket() ) {
+    //if ( ( now - lastTime ) > 1000 ) {
+        //lastTime = now;
+    while ( packet = crystalFontz635.getNextPacket ( packet ) ) {
+
+        //crystalFontz635.dumpPacket ( "loop got a valid packet", (uint8_t *)packet );
+        //crystalFontz635.dumpReadBuffers();
         if ( packet->type == CFA635_PACKET_TYPE_KEY_ACTIVITY ) {
             if ( CFA635_KEY_UP_PRESS == packet->data[0] ) {
                 redValue++;
@@ -77,6 +82,7 @@ void loop() {
             //Serial.println ( "Got a packet that we don't care about" );
         }
     }
+    //}
     if ( updateLED ) {
         bufferString.begin();
         bufferString.print ( "Red LED:   " );
